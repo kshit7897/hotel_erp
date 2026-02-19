@@ -15,6 +15,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, userProfile, loading } = useAuth();
@@ -32,14 +33,17 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorCode(null);
 
     try {
-      const cleanEmail = email.trim();
+      const cleanEmail = email.trim().toLowerCase();
       await signInWithEmailAndPassword(auth, cleanEmail, password);
       toast({ title: "Welcome back!", description: "Successfully logged in." });
       // Redirect handled by AuthProvider/Router logic
     } catch (error: any) {
       console.error("Login Error:", error);
+
+      setErrorCode(error.code || error.message);
 
       let message = "Invalid email or password. Please try again.";
 
@@ -130,9 +134,26 @@ export default function Login() {
             </Button>
           </form>
 
+          <div className="mt-4 text-center">
+            {/* Debugging: Show exact error code for mobile users */}
+            {errorCode && (
+              <div className="p-3 mb-4 bg-destructive/15 text-destructive text-sm rounded-md border border-destructive/20">
+                <p className="font-bold">Error Code: {errorCode}</p>
+                <p>Please share this code with support.</p>
+              </div>
+            )}
+
+            {email.includes("@gamil.com") && (
+              <div className="p-2 mb-4 bg-yellow-100 text-yellow-800 text-sm rounded-md">
+                Did you mean <b>@gmail.com</b>?
+              </div>
+            )}
+          </div>
+
           <div className="mt-6 text-center text-xs text-muted-foreground">
             <p>Demo Admin: admin@gourmet.os / password123</p>
             <p>Demo Staff: staff@gourmet.os / password123</p>
+            <p className="mt-2 opacity-50">App Version: v1.5 (Mobile Debug)</p>
           </div>
         </CardContent>
       </Card>

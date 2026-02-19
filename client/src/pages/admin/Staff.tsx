@@ -10,7 +10,7 @@ import { Loader2, UserPlus, ShieldCheck } from "lucide-react";
 
 // For client-side user creation without logging out current user
 import { initializeApp, deleteApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, updateProfile, signOut } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, updateProfile, signOut, setPersistence, inMemoryPersistence } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -34,8 +34,8 @@ export default function StaffManagement() {
     let secondaryApp;
 
     try {
-      // 1. Create a secondary Firebase App instance so we don't log out the admin
-      // using the config from existing environment
+      console.log("Starting user creation process...");
+
       const firebaseConfig = {
         apiKey: "AIzaSyAv0w9mgKlQueq5kBCtOnGseXzbEorGKuE",
         authDomain: "hotel-erp-a8e38.firebaseapp.com",
@@ -45,33 +45,43 @@ export default function StaffManagement() {
         appId: "1:344378058320:web:2a3dec0e91cac5883d9355",
       };
 
-      secondaryApp = initializeApp(firebaseConfig, "Secondary");
+      // 1. Initialize secondary app with unique name to avoid conflicts
+      secondaryApp = initializeApp(firebaseConfig, `Secondary-${Date.now()}`);
       const secondaryAuth = getAuth(secondaryApp);
 
-      // 2. Create the user
+      // 2. CRITICAL: Force in-memory persistence so we don't overwrite the Admin's session
+      await setPersistence(secondaryAuth, inMemoryPersistence);
+
+      // Normalize email
+      const normalizedEmail = data.email.toLowerCase().trim();
+
+      // 3. Create the user
+      console.log("Creating user in Auth...");
       const userCredential = await createUserWithEmailAndPassword(
         secondaryAuth,
-        data.email,
+        normalizedEmail,
         data.password
       );
 
       const user = userCredential.user;
+      console.log("User created in Auth:", user.uid);
 
-      // 3. Update Profile (DisplayName)
+      // 4. Update Profile
       await updateProfile(user, {
         displayName: data.name
       });
 
-      // 4. Create User Document in Firestore with Role
+      // 5. Create User Document in Firestore
+      console.log("Creating user document in Firestore...");
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
-        email: user.email,
+        email: normalizedEmail,
         name: data.name,
         role: data.role || "staff",
         createdAt: serverTimestamp()
       });
 
-      // 5. Success
+      // 6. Success
       toast({
         title: "Staff Created",
         description: `Account created for ${data.name} as ${data.role}`,
@@ -79,7 +89,7 @@ export default function StaffManagement() {
 
       form.reset();
 
-      // Logout the secondary user immediately just in case
+      // Cleanup auth immediately
       await signOut(secondaryAuth);
 
     } catch (error: any) {
@@ -90,9 +100,9 @@ export default function StaffManagement() {
         variant: "destructive",
       });
     } finally {
-      // 6. Cleanup
+      // 7. Cleanup app instance
       if (secondaryApp) {
-        await deleteApp(secondaryApp);
+        await deleteApp(secondaryApp).catch(err => console.error("Error deleting app:", err));
       }
       setIsPending(false);
     }
