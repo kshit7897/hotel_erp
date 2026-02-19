@@ -18,18 +18,6 @@ export default function KitchenDisplay() {
     }
   };
 
-  const getNextStatus = (current: OrderStatus): OrderStatus | null => {
-    if (current === "pending") return "preparing";
-    if (current === "preparing") return "ready";
-    if (current === "ready") return "completed";
-    return null;
-  };
-
-  const handleAction = (order: Order) => {
-    const next = getNextStatus(order.status);
-    if (next) updateOrderStatus(order.id!, next);
-  };
-
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
@@ -51,10 +39,10 @@ export default function KitchenDisplay() {
           </div>
         ) : (
           orders.map((order) => (
-            <OrderCard 
-              key={order.id} 
-              order={order} 
-              onAction={() => handleAction(order)}
+            <OrderCard
+              key={order.id}
+              order={order}
+              onAction={(status) => updateOrderStatus(order.id!, status)}
               statusColor={getStatusColor(order.status)}
             />
           ))
@@ -64,20 +52,17 @@ export default function KitchenDisplay() {
   );
 }
 
-function OrderCard({ 
-  order, 
-  onAction, 
-  statusColor 
-}: { 
-  order: Order; 
-  onAction: () => void;
+function OrderCard({
+  order,
+  onAction,
+  statusColor
+}: {
+  order: Order;
+  onAction: (status: OrderStatus) => void;
   statusColor: string;
 }) {
-  const nextStatus = order.status === "pending" ? "Start Preparing" 
-    : order.status === "preparing" ? "Mark Ready" 
-    : "Complete";
 
-  const timeAgo = order.createdAt?.seconds 
+  const timeAgo = order.createdAt?.seconds
     ? formatDistanceToNow(new Date(order.createdAt.seconds * 1000), { addSuffix: true })
     : "Just now";
 
@@ -97,7 +82,7 @@ function OrderCard({
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="flex-1 p-4">
         <ul className="space-y-3">
           {order.items.map((item, idx) => (
@@ -113,18 +98,39 @@ function OrderCard({
         </ul>
       </CardContent>
 
-      <CardFooter className="p-3 bg-muted/10 border-t">
-        <Button 
-          className="w-full gap-2 font-bold" 
-          size="lg"
-          variant={order.status === 'ready' ? "default" : "secondary"}
-          onClick={onAction}
-        >
-          {order.status === 'pending' && <PlayCircle className="h-5 w-5" />}
-          {order.status === 'preparing' && <ChefHat className="h-5 w-5" />}
-          {order.status === 'ready' && <CheckCircle2 className="h-5 w-5" />}
-          {nextStatus}
-        </Button>
+      <CardFooter className="p-3 bg-muted/10 border-t flex gap-2">
+        {order.status === 'pending' && (
+          <Button
+            className="w-full gap-2 font-bold bg-yellow-500 hover:bg-yellow-600 text-white"
+            size="lg"
+            onClick={() => onAction('preparing')}
+          >
+            <ChefHat className="h-5 w-5" />
+            Start Preparing
+          </Button>
+        )}
+
+        {order.status === 'preparing' && (
+          <Button
+            className="w-full gap-2 font-bold bg-blue-500 hover:bg-blue-600 text-white"
+            size="lg"
+            onClick={() => onAction('ready')}
+          >
+            <CheckCircle2 className="h-5 w-5" />
+            Mark Ready
+          </Button>
+        )}
+
+        {order.status === 'ready' && (
+          <Button
+            className="w-full gap-2 font-bold bg-green-600 hover:bg-green-700 text-white"
+            size="lg"
+            onClick={() => onAction('completed')}
+          >
+            <PlayCircle className="h-5 w-5" />
+            Complete Order
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

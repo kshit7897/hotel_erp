@@ -8,12 +8,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Product, OrderItem, PaymentMethod } from "@shared/schema";
-import { Search, Trash2, Plus, Minus, CreditCard, Banknote } from "lucide-react";
+import { Search, Trash2, Plus, Minus, CreditCard, Banknote, ShoppingBag } from "lucide-react";
 
 export default function POS() {
   const { products, loading } = useProducts();
   const { createOrder } = useOrders();
-  
+
   const [cart, setCart] = useState<OrderItem[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
@@ -32,8 +32,8 @@ export default function POS() {
     setCart(prev => {
       const existing = prev.find(item => item.productId === product.id);
       if (existing) {
-        return prev.map(item => 
-          item.productId === product.id 
+        return prev.map(item =>
+          item.productId === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -87,8 +87,8 @@ export default function POS() {
         <div className="flex gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search items..." 
+            <Input
+              placeholder="Search items..."
               className="pl-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -97,7 +97,7 @@ export default function POS() {
           <ScrollArea className="w-full whitespace-nowrap pb-2">
             <div className="flex gap-2">
               {categories.map(cat => (
-                <Button 
+                <Button
                   key={cat}
                   variant={category === cat ? "default" : "outline"}
                   onClick={() => setCategory(cat)}
@@ -113,10 +113,10 @@ export default function POS() {
         <ScrollArea className="flex-1">
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
             {filteredProducts.map(product => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                mode="pos" 
+              <ProductCard
+                key={product.id}
+                product={product}
+                mode="pos"
                 onAdd={addToCart}
               />
             ))}
@@ -143,7 +143,7 @@ export default function POS() {
                   <div key={item.productId} className="flex justify-between items-center bg-muted/30 p-2 rounded-lg">
                     <div className="flex-1">
                       <p className="font-medium text-sm">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">${item.price.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">₹{item.price.toFixed(2)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.productId, -1)}>
@@ -166,11 +166,11 @@ export default function POS() {
         <CardFooter className="flex-col gap-4 border-t p-4 bg-muted/10">
           <div className="flex justify-between w-full text-lg font-bold">
             <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+            <span>₹{total.toFixed(2)}</span>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-2 w-full">
-            <Button 
+            <Button
               variant={paymentMethod === "cash" ? "default" : "outline"}
               onClick={() => setPaymentMethod("cash")}
               className="gap-2"
@@ -178,7 +178,7 @@ export default function POS() {
               <Banknote className="h-4 w-4" />
               Cash
             </Button>
-            <Button 
+            <Button
               variant={paymentMethod === "digital" ? "default" : "outline"}
               onClick={() => setPaymentMethod("digital")}
               className="gap-2"
@@ -188,8 +188,8 @@ export default function POS() {
             </Button>
           </div>
 
-          <Button 
-            className="w-full py-6 text-lg" 
+          <Button
+            className="w-full py-6 text-lg"
             size="lg"
             disabled={cart.length === 0 || isProcessing}
             onClick={handleCheckout}

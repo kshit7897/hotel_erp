@@ -32,8 +32,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (userDoc.exists()) {
             setUserProfile(userDoc.data() as User);
           } else {
-            // Handle edge case where auth exists but firestore doc doesn't
-            console.error("User document not found");
+            console.log("User document not found in Firestore.");
+            // Optional: Auto-create a doc for existing users if needed, or just deny.
+            // For now, deny access if not in database
             setUserProfile(null);
           }
         } catch (error) {

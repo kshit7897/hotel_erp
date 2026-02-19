@@ -31,16 +31,16 @@ export function ProductCard({ product, mode, onAdd, onEdit, onDelete }: ProductC
     )}>
       <div className="relative h-32 w-full overflow-hidden">
         {/* Descriptive alt text for accessibility */}
-        <img 
-          src={getImage(product.category)} 
+        <img
+          src={getImage(product.category)}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         <div className="absolute top-2 right-2 bg-black/70 backdrop-blur text-white text-xs font-bold px-2 py-1 rounded-full">
-          ${product.price.toFixed(2)}
+          ₹{product.price.toFixed(2)}
         </div>
       </div>
-      
+
       <CardContent className="p-4 flex-grow">
         <h3 className="font-display font-bold text-lg leading-tight mb-1">{product.name}</h3>
         <p className="text-sm text-muted-foreground capitalize">{product.category}</p>
@@ -48,8 +48,8 @@ export function ProductCard({ product, mode, onAdd, onEdit, onDelete }: ProductC
 
       <CardFooter className="p-4 pt-0">
         {mode === "pos" ? (
-          <Button 
-            className="w-full" 
+          <Button
+            className="w-full"
             onClick={() => onAdd?.(product)}
             disabled={!product.available}
           >
@@ -58,16 +58,16 @@ export function ProductCard({ product, mode, onAdd, onEdit, onDelete }: ProductC
           </Button>
         ) : (
           <div className="flex w-full gap-2">
-            <Button 
-              variant="outline" 
-              className="flex-1" 
+            <Button
+              variant="outline"
+              className="flex-1"
               onClick={() => onEdit?.(product)}
             >
               <Edit2 className="h-4 w-4 mr-2" />
               Edit
             </Button>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               className="text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={() => onDelete?.(product)}

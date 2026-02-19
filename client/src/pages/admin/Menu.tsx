@@ -28,7 +28,7 @@ export default function MenuManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -63,8 +63,8 @@ export default function MenuManagement() {
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input 
-          placeholder="Search menu items..." 
+        <Input
+          placeholder="Search menu items..."
           className="pl-9"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -78,7 +78,7 @@ export default function MenuManagement() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map(product => (
-            <ProductCard 
+            <ProductCard
               key={product.id}
               product={product}
               mode="admin"
@@ -89,8 +89,8 @@ export default function MenuManagement() {
         </div>
       )}
 
-      <ProductDialog 
-        open={isDialogOpen} 
+      <ProductDialog
+        open={isDialogOpen}
         onOpenChange={(open) => !open && closeDialog()}
         product={editingProduct}
         onSubmit={async (data) => {
@@ -106,13 +106,13 @@ export default function MenuManagement() {
   );
 }
 
-function ProductDialog({ 
-  open, 
-  onOpenChange, 
-  product, 
-  onSubmit 
-}: { 
-  open: boolean; 
+function ProductDialog({
+  open,
+  onOpenChange,
+  product,
+  onSubmit
+}: {
+  open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product | null;
   onSubmit: (data: ProductFormValues) => Promise<void>;
@@ -159,19 +159,19 @@ function ProductDialog({
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price">Price ($)</Label>
+              <Label htmlFor="price">Price (₹)</Label>
               <Input id="price" type="number" step="0.01" {...form.register("price")} />
               {form.formState.errors.price && (
                 <p className="text-sm text-destructive">{form.formState.errors.price.message}</p>
               )}
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select 
+              <Select
                 onValueChange={(val) => form.setValue("category", val)}
                 defaultValue={product?.category}
               >
@@ -193,8 +193,8 @@ function ProductDialog({
           </div>
 
           <div className="flex items-center space-x-2 pt-2">
-            <Switch 
-              id="available" 
+            <Switch
+              id="available"
               checked={form.watch("available")}
               onCheckedChange={(checked) => form.setValue("available", checked)}
             />

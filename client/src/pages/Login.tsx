@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -15,6 +16,17 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user, userProfile, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user && userProfile) {
+      if (userProfile.role === 'admin') {
+        setLocation('/admin');
+      } else {
+        setLocation('/staff/kitchen');
+      }
+    }
+  }, [user, userProfile, loading, setLocation]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +50,7 @@ export default function Login() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-muted/30 p-4">
       <div className="absolute inset-0 z-0 opacity-10 pointer-events-none bg-[url('https://pixabay.com/get/g8a77e7e523c431b8edaf9c97ec1efd91b761f593ea726fef09240d6b1b0a82e9cc78472e82db72ca1248e6756340fff87810b2a5689fb7abdfd3aa5b750c982b_1280.jpg')] bg-cover bg-center" />
-      
+
       <Card className="w-full max-w-md shadow-xl relative z-10 glass-card">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
@@ -72,9 +84,9 @@ export default function Login() {
                 className="h-11"
               />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full h-11 font-semibold text-lg" 
+            <Button
+              type="submit"
+              className="w-full h-11 font-semibold text-lg"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -87,7 +99,7 @@ export default function Login() {
               )}
             </Button>
           </form>
-          
+
           <div className="mt-6 text-center text-xs text-muted-foreground">
             <p>Demo Admin: admin@gourmet.os / password123</p>
             <p>Demo Staff: staff@gourmet.os / password123</p>

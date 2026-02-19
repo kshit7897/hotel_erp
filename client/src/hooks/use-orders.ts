@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { 
-  collection, 
-  onSnapshot, 
-  addDoc, 
-  updateDoc, 
-  doc, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  doc,
+  query,
+  where,
+  orderBy,
   serverTimestamp,
-  Timestamp 
+  Timestamp
 } from "firebase/firestore";
 import { Order, OrderStatus } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -22,29 +22,35 @@ export function useOrders(filterStatus?: boolean) {
 
   useEffect(() => {
     let q;
-    
-    if (filterStatus) {
-      // For kitchen: show only active orders
-      q = query(
-        collection(db, "orders"),
-        where("status", "!=", "completed"),
-        orderBy("status", "asc"),
-        orderBy("createdAt", "asc")
-      );
-    } else {
-      // For admin: show all orders (could limit to recent 50)
-      q = query(
-        collection(db, "orders"),
-        orderBy("createdAt", "desc")
-      );
-    }
+
+    // Simplified query to avoid index requirement errors locally
+    // Fetch recent orders first
+    q = query(
+      collection(db, "orders"),
+      orderBy("createdAt", "desc") // Show newest first generally
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const ordersData = snapshot.docs.map((doc) => ({
+      let ordersData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        // Convert timestamp to serializable format if needed, though for UI we use it directly
       })) as Order[];
+
+      if (filterStatus) {
+        // Client-side filtering for Kitchen Display
+        // Filter out completed orders
+        ordersData = ordersData.filter(o => o.status !== 'completed');
+
+        // Custom sort: pending -> preparing -> ready -> (then by time)
+        const statusPriority = { 'pending': 0, 'preparing': 1, 'ready': 2, 'completed': 3 };
+        ordersData.sort((a, b) => {
+          const statusDiff = (statusPriority[a.status] || 0) - (statusPriority[b.status] || 0);
+          if (statusDiff !== 0) return statusDiff;
+          // If same status, older first (FIFO)
+          return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
+        });
+      }
+
       setOrders(ordersData);
       setLoading(false);
     }, (error) => {
