@@ -1,8 +1,8 @@
 import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
 
-// modify the interface with any CRUD methods
-// you might need
+// This file is kept to satisfy template requirements but we are using Firebase
+// effectively as our "storage" for the critical parts (users, orders).
+// We can use this for temporary in-memory storage if needed, or just keep it minimal.
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -28,8 +28,8 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const id = "mock-id"; 
+    const user: User = { ...insertUser, id, role: "admin" }; // Default role
     this.users.set(id, user);
     return user;
   }
